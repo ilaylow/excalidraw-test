@@ -391,6 +391,7 @@ with open(config_path, "r") as f:
     config_data = config_file_data["settings"]
 
 # Load in scope bindings file - get mapping to config params
+scope_binding_to_config_value_map = {}
 with open(scope_bindings_path, "r") as f:
     scope_bindings_file_data = json5.load(f)
     scope_bindings = scope_bindings_file_data["scopeBindings"]
@@ -424,16 +425,70 @@ with open(scope_bindings_path, "r") as f:
                     config_value = binding["fallback"]["to"]
             
             print(f"{find}:{config_expression}:{config_value}")
+            scope_binding_to_config_value_map[find] = config_value
                     
-
 # Create boxes for each param file
-for param_file in parameters_files:
+for i in range(len(parameters_files)):
+
+    param_file = parameters_files[i]
+    param_file_name = param_file.split("\\")[-1]
+    value_binds = []
     
     # Load in file data 
     param_file_path = os.path.join(root_dir, param_file).replace("\\", "/")
     with open(param_file_path, "r") as f:
         param_file_data = json.load(f)
         params = param_file_data["parameters"]
+        for key in params:
+            if isinstance(params[key]["value"], str):
+                config_value = "NOT_FOUND" if params[key]["value"] not in scope_binding_to_config_value_map else scope_binding_to_config_value_map[params[key]["value"]]
+                value_bind = f"{key} <--> {params[key]["value"]} <--> {config_value}"
+            else:
+                value_bind = f"{key} <--> {params[key]["value"]}"
+            
+            value_binds.append(value_bind)
+    
+    parameters_draw_element = { 
+        "type": "rectangle",
+        "x": ROLLOUT_SPEC_POS[0] + ((i + 1) * 400) + 100,
+        "y": ROLLOUT_SPEC_POS[1] ,
+        "height": (len(value_binds) * (STANDARD_HEIGHT + PADDING_HEIGHT + 20) + PADDING_HEIGHT),
+        "width": STANDARD_WIDTH + 80,
+        "roundness": {
+        "type": 3
+        },
+        "backgroundColor": "#64ede0",
+    }
+    text_draw_element = {
+        "type": "text",
+        "x": ROLLOUT_SPEC_POS[0] + ((i + 1) * 400) + 100,
+        "y": ROLLOUT_SPEC_POS[1] - 30,
+        "text": param_file_name,
+        "fontSize": 15,
+    }
+    draw_elements.append(parameters_draw_element)
+    draw_elements.append(text_draw_element)
+
+    for j in range(len(value_binds)):
+        param_draw_element = { 
+            "type": "rectangle",
+            "x": ROLLOUT_SPEC_POS[0] + ((i + 1) * 400) + 115,
+            "y": ROLLOUT_SPEC_POS[1] + (j * (STANDARD_HEIGHT + PADDING_HEIGHT + 20)) + 10,
+            "height": 50,
+            "width": 250,
+            "roundness": {
+            "type": 3
+            },
+            "id": SERVICE_MODEL_ID,
+            "backgroundColor": "#facf73",
+            "label": {
+                "text": value_binds[j],
+                "fontSize": 10,
+            },  
+        }
+    
+        draw_elements.append(param_draw_element)
+
 
 
 # Export elements to be loaded into excalidraw
