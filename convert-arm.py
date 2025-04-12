@@ -1,4 +1,5 @@
 import json5
+import json
 import os
 import argparse
 import re
@@ -421,7 +422,7 @@ with open(scope_bindings_path, "r") as f:
 
 # Export elements to be loaded into excalidraw
 with open('./public/excalidraw_elements.json', 'w') as f:
-    json5.dump(draw_elements, f)
+    json.dump(draw_elements, f)
     print("\nWrote elements to file public/excalidraw_elements.json")
 
 
