@@ -330,6 +330,8 @@ draw_elements.append(
 if len(rollout_params_files):
     for i in range(len(rollout_params_files)):
         rollout_param = rollout_params_files[i].split("\\")[-1]
+        
+        # This needs to be fixed
         draw_elements.append(
             {
                 "type": "rectangle",
@@ -349,8 +351,9 @@ if len(rollout_params_files):
             }
         )
 
+        # This needs to be fixed
         draw_elements.append(
-            {   # Rollout Spec to Service Model
+            {
                 "type": "arrow",
                 "x": SERVICE_MODEL_POS[0],
                 "y": SERVICE_MODEL_POS[1] + 20,
@@ -358,13 +361,26 @@ if len(rollout_params_files):
             }
         )
 
+# Draw arrow from rollout params to scope bindings
 draw_elements.append(
-    {   # Rollout Spec to Service Model
+    {
         "type": "arrow",
-        "x": SERVICE_MODEL_POS[0] + 400,
-        "y": SERVICE_MODEL_POS[1] + 130,
-        "width": 120,
-        "height": -90,
+        "x": SERVICE_MODEL_POS[0] - 100,
+        "y": SERVICE_MODEL_POS[1] + 20,
+        "points": [
+            [
+                0,
+                0
+            ],
+            [
+                300,
+                80,
+            ],
+            [
+                575,
+                20,
+            ]
+        ],
         "strokeColor": "#e82e47",
     }
 )
@@ -411,13 +427,13 @@ with open(scope_bindings_path, "r") as f:
                     
 
 # Create boxes for each param file
-# for param_file in parameters_files:
+for param_file in parameters_files:
     
-#     # Load in file data 
-#     param_file_path = os.path.join(root_dir, param_file).replace("\\", "/")
-#     with open(param_file_path, "r") as f:
-#         param_file_data = json.load(f)
-#         params = param_file_data["parameters"]
+    # Load in file data 
+    param_file_path = os.path.join(root_dir, param_file).replace("\\", "/")
+    with open(param_file_path, "r") as f:
+        param_file_data = json.load(f)
+        params = param_file_data["parameters"]
 
 
 # Export elements to be loaded into excalidraw
