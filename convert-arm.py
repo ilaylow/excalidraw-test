@@ -28,10 +28,11 @@ parser.add_argument("--file", type=str, required=True, help='File path to the ro
 args = parser.parse_args()
 
 # Validate that rollout spec file exists
-rollout_spec_file_path = str(args.file)
+rollout_spec_file_path = str(args.file).replace("\\", "/")
 
 if not os.path.isfile(rollout_spec_file_path):
     print("Invalid file path or file does not exist")
+    exit
 
 # Parse rollout spec - and parse through elements
 with open(rollout_spec_file_path, 'r') as file:
