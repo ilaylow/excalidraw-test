@@ -42,6 +42,8 @@ with open(rollout_spec_file_path, 'r') as file:
 root_dir = rollout_spec_file_path.split("/")[:-2]
 root_dir = "/".join(root_dir)
 
+repository_name = rollout_spec_file_path.split("/")[-4]
+
 rollout_spec_filename = rollout_spec_file_path.split("/")[-1]
 rollout_infra = rollout_spec_file_path.split("/")[-1].split(".")[1]
 
@@ -66,6 +68,13 @@ print(f"Config exists: {config_exist}")
 
 # Build first 4 entities
 draw_elements = [
+    {
+        "type": "text",
+        "x": -20,
+        "y": -180,
+        "fontSize": 36,
+        "text": repository_name,
+    },
     {  
         "type": "arrow",
         "x": -25,
@@ -457,7 +466,7 @@ for i in range(len(parameters_files)):
         "roundness": {
         "type": 3
         },
-        "backgroundColor": "#64ede0",
+        "backgroundColor": "#4dabf7",
     }
     text_draw_element = {
         "type": "text",
