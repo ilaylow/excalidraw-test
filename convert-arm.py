@@ -410,11 +410,9 @@ with open(scope_bindings_path, "r") as f:
             find = binding["find"]
             config_expression = binding["replaceWith"]
             match = re.search(r"\$config\((.*?)\)", config_expression)
-            if not config_expression:
-                print(f"Could not find value for {find}")
-                continue
             if not match:
-                print(f"Could not find value for {find}")
+                print(f"Could not find value for {find}, using value {config_expression} as is...")
+                scope_binding_to_config_value_map[find] = config_expression
                 continue
             config_expression = match.group(1)
             config_expression_list = config_expression.split(".")
@@ -445,13 +443,28 @@ for i in range(len(parameters_files)):
     
     # Load in file data 
     param_file_path = os.path.join(root_dir, param_file).replace("\\", "/")
+    if not os.path.exists(param_file_path):
+        print(f"{param_file_path} not found, skipping...")
+        continue
+
     with open(param_file_path, "r") as f:
         param_file_data = json.load(f)
         params = param_file_data["parameters"]
         for key in params:
             if isinstance(params[key]["value"], str):
-                config_value = "NOT_FOUND" if params[key]["value"] not in scope_binding_to_config_value_map else scope_binding_to_config_value_map[params[key]["value"]]
-                value_bind = f"{key} <--> {params[key]["value"]} <--> {config_value}"
+
+                scope_binding_match = {}
+                matches = re.findall(r'(__[a-zA-Z0-9_]+?__)', params[key]["value"])
+                for scope_binding in matches:
+                    if scope_binding in scope_binding_to_config_value_map:
+                        scope_binding_match[scope_binding] = scope_binding_to_config_value_map[scope_binding]
+
+                def replacer(match):
+                    key = match.group(1)
+                    return scope_binding_match.get(key, f"NOT_FOUND")  # fallback if key not found
+
+                filled_parameter_value = re.sub(r'(__[a-zA-Z0-9_]+?__)', replacer, params[key]["value"])
+                value_bind = f"{key} <--> {params[key]["value"]} <--> {filled_parameter_value}"
             else:
                 value_bind = f"{key} <--> {params[key]["value"]}"
             
@@ -461,7 +474,7 @@ for i in range(len(parameters_files)):
         "type": "rectangle",
         "x": ROLLOUT_SPEC_POS[0] + ((i + 1) * 400) + 100,
         "y": ROLLOUT_SPEC_POS[1] ,
-        "height": (len(value_binds) * (STANDARD_HEIGHT + PADDING_HEIGHT + 20) + PADDING_HEIGHT),
+        "height": (len(value_binds) * (STANDARD_HEIGHT + PADDING_HEIGHT + 80) + PADDING_HEIGHT),
         "width": STANDARD_WIDTH + 80,
         "roundness": {
         "type": 3
@@ -482,7 +495,7 @@ for i in range(len(parameters_files)):
         param_draw_element = { 
             "type": "rectangle",
             "x": ROLLOUT_SPEC_POS[0] + ((i + 1) * 400) + 115,
-            "y": ROLLOUT_SPEC_POS[1] + (j * (STANDARD_HEIGHT + PADDING_HEIGHT + 20)) + 10,
+            "y": ROLLOUT_SPEC_POS[1] + (j * (STANDARD_HEIGHT + PADDING_HEIGHT + 80)) + 10,
             "height": 50,
             "width": 250,
             "roundness": {
